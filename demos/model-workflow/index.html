@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>可溯源 Prompt 工作流系统</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="input-pane">
+        <header class="hero-card">
+          <p class="eyebrow">Traceable Prompt Workflow · MVP</p>
+          <h1>可溯源 Prompt<br />工作流系统</h1>
+          <p>把访谈意见与图片素材转化为设计语义、视觉素材库、Prompt 和证据链。</p>
+        </header>
+
+        <section class="card">
+          <div class="section-title">
+            <div><p class="eyebrow">Module 1</p><h2>项目基础信息</h2></div>
+            <span id="inputHint" class="pill">待输入</span>
+          </div>
+          <div class="form-grid two">
+            <label>项目名称<input id="projectName" value="海窝子鹅IP设计" /></label>
+            <label>设计对象<input id="designTarget" value="鹅IP" /></label>
+            <label class="span-2">地区<input id="location" value="四川省彭州市海窝子古镇" /></label>
+            <label class="span-2">风格倾向<input id="stylePreference" value="轻扁平、年轻化、亲切、有设计感、避免元素堆砌" /></label>
+          </div>
+          <div class="check-row" id="useCaseGroup">
+            <label><input type="checkbox" value="文创" checked />文创</label>
+            <label><input type="checkbox" value="导视" checked />导视</label>
+            <label><input type="checkbox" value="活动海报" checked />活动海报</label>
+            <label><input type="checkbox" value="表情包" checked />表情包</label>
+            <label><input type="checkbox" value="社交传播" />社交传播</label>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="section-title">
+            <div><p class="eyebrow">Module 2</p><h2>文字意见</h2></div>
+            <button id="addTextBtn" class="ghost-btn">+ 单条</button>
+          </div>
+          <textarea id="batchText" class="batch-box" placeholder="批量粘贴：每一行会变成一条意见，例如：\n青年视物局｜品牌策划｜希望年轻人愿意拍照，但不要幼稚。"></textarea>
+          <div class="button-row">
+            <button id="importBatchBtn" class="secondary-btn">导入批量文本</button>
+            <button id="loadSampleBtn" class="ghost-btn">载入海窝子示例</button>
+          </div>
+          <div id="textList" class="source-list"></div>
+        </section>
+
+        <section class="card">
+          <div class="section-title">
+            <div><p class="eyebrow">Module 3</p><h2>图片素材</h2></div>
+            <button id="addImageBtn" class="ghost-btn">+ 图片语义</button>
+          </div>
+          <label class="upload-zone" for="imageUpload">
+            <input id="imageUpload" type="file" accept="image/*" multiple />
+            <strong>点击上传 / 多图上传</strong>
+            <span>上传后可补充图片类型、说明和相关文化；MVP 会基于说明模拟视觉提取。</span>
+          </label>
+          <div id="imageList" class="source-list"></div>
+        </section>
+
+        <section class="action-bar">
+          <button id="startAnalysisBtn" class="primary-btn">开始分析</button>
+          <button id="clearBtn" class="secondary-btn">清空输入</button>
+          <button id="saveDraftBtn" class="ghost-btn">保存草稿</button>
+          <span id="modelStatus" class="pill">检查模型服务中</span>
+        </section>
+      </section>
+
+      <section class="output-pane">
+        <section class="card progress-card">
+          <div class="section-title">
+            <div><p class="eyebrow">Workflow</p><h2>Node 1-8 运行状态</h2></div>
+            <span id="globalStatus" class="pill strong">未开始</span>
+          </div>
+          <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+          <div id="nodeTimeline" class="node-timeline"></div>
+        </section>
+
+        <section class="card output-card">
+          <div class="output-tabs" role="tablist">
+            <button class="output-tab is-active" data-output-tab="briefTab">设计简报</button>
+            <button class="output-tab" data-output-tab="promptTab">生成 Prompt</button>
+            <button class="output-tab" data-output-tab="provenanceTab">设计溯源表</button>
+            <button class="output-tab" data-output-tab="materialTab">素材库</button>
+          </div>
+
+          <div id="briefTab" class="output-panel is-active">
+            <div class="section-title"><h2>结构化设计简报</h2><button id="exportMarkdownBtn" class="ghost-btn">导出 Markdown</button></div>
+            <div id="briefContent" class="brief-grid empty-state">运行后生成 IP定位、核心气质、外形方向、文化转译策略、色彩系统、风格约束与分歧折中策略。</div>
+          </div>
+
+          <div id="promptTab" class="output-panel">
+            <div class="prompt-block">
+              <div class="section-title"><h3>中文 Prompt</h3><button class="copy-btn ghost-btn" data-copy="promptZh">复制</button></div>
+              <textarea id="promptZh" class="prompt-area" placeholder="运行后生成中文 Prompt"></textarea>
+            </div>
+            <div class="prompt-block">
+              <div class="section-title"><h3>English Prompt</h3><button class="copy-btn ghost-btn" data-copy="promptEn">复制</button></div>
+              <textarea id="promptEn" class="prompt-area" placeholder="运行后生成英文 Prompt"></textarea>
+            </div>
+            <div class="prompt-block">
+              <div class="section-title"><h3>Negative Prompt</h3><button class="copy-btn ghost-btn" data-copy="negativePrompt">复制</button></div>
+              <textarea id="negativePrompt" class="prompt-area small" placeholder="运行后生成 Negative Prompt"></textarea>
+            </div>
+            <div id="promptEvidence" class="evidence-strip"></div>
+          </div>
+
+          <div id="provenanceTab" class="output-panel">
+            <div class="filter-row">
+              <input id="provenanceSearch" placeholder="按设计点 / 来源 / 用户搜索" />
+              <select id="adoptionFilter"><option value="all">全部采纳方式</option></select>
+              <select id="imageFilter"><option value="all">全部图片</option></select>
+              <button id="exportCsvBtn" class="ghost-btn">导出 CSV</button>
+              <button id="exportJsonBtn" class="ghost-btn">导出 JSON</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>设计点</th><th>具体表现</th><th>来源</th><th>支持者</th><th>反对/分歧</th><th>相关图片</th><th>转译逻辑</th><th>采纳方式</th></tr></thead>
+                <tbody id="provenanceBody"><tr><td colspan="8" class="empty-cell">暂无溯源数据。</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="materialTab" class="output-panel">
+            <div class="section-title"><h2>图片素材库 / 文化素材库</h2><button id="exportMaterialBtn" class="ghost-btn">导出素材库 JSON</button></div>
+            <div id="materialGrid" class="material-grid empty-state">运行后展示每张图片的视觉对象、形态特征、色彩、材质、符号元素、情绪关键词和可转译部位。</div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <template id="textCardTemplate">
+      <article class="source-card text-card">
+        <div class="source-head"><strong class="source-id"></strong><button class="icon-btn remove-text">×</button></div>
+        <div class="form-grid two">
+          <label>说话者名称<input class="speaker-name" placeholder="如 青年视物局" /></label>
+          <label>说话者角色<select class="speaker-role"><option>品牌策划</option><option>商户</option><option>村民</option><option>游客</option><option>文化研究者</option><option>政府/运营方</option><option>非遗代表</option><option>未知</option></select></label>
+          <label>重要性<select class="importance"><option value="normal">normal</option><option value="high">high</option><option value="low">low</option></select></label>
+          <label>关联图片<input class="related-images" placeholder="IMG001, IMG002" /></label>
+        </div>
+        <textarea class="text-content" placeholder="输入用户意见原文"></textarea>
+      </article>
+    </template>
+
+    <template id="imageCardTemplate">
+      <article class="source-card image-card">
+        <div class="source-head"><strong class="image-id"></strong><button class="icon-btn remove-image">×</button></div>
+        <div class="image-preview">图片预览</div>
+        <div class="form-grid two">
+          <label>图片名称<input class="image-name" placeholder="如 古镇门楼" /></label>
+          <label>图片类型<select class="image-type"><option value="architecture">建筑</option><option value="food">食物</option><option value="street">街景</option><option value="pattern">纹样</option><option value="craft">非遗/手工</option><option value="other">其他</option></select></label>
+          <label class="span-2">图片说明<textarea class="image-description" placeholder="描述可见元素：层叠屋檐、木质结构、暖棕色、窗棂格纹……"></textarea></label>
+          <label class="span-2">相关文化<input class="related-culture" placeholder="如 古镇建筑、烫油鹅、龙门绣" /></label>
+        </div>
+      </article>
+    </template>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
