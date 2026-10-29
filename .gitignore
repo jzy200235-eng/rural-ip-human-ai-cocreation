@@ -1,0 +1,35 @@
+# Dependencies and generated files
+node_modules/
+dist/
+dist-ssr/
+*.tsbuildinfo
+coverage/
+*.log
+# Secrets and machine configuration
+.env
+.env.*
+!.env.example
+*.local
+*.pem
+*.key
+credentials*.json
+.npmrc
+# Private research and personal materials: never put these in this repository
+research-private/
+interviews/
+raw-data/
+private/
+*.xlsx
+*.xls
+*.doc
+*.docx
+*.pdf
+*.csv
+*.tsv
+*.mp4
+*.mov
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.sw?
